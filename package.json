@@ -4,7 +4,8 @@
   "description": "API to get Free Fire player name by UID using Puppeteer",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "postinstall": "puppeteer install"
   },
   "author": "Your Name",
   "license": "MIT",
