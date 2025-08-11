@@ -6,6 +6,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Use CHROMIUM_PATH env variable if set (for custom Chrome executable)
+const executablePath = process.env.CHROMIUM_PATH || null;
+
 app.post('/get-player-name', async (req, res) => {
   const { uid } = req.body;
   if (!uid) return res.status(400).json({ error: 'UID missing' });
@@ -13,26 +16,24 @@ app.post('/get-player-name', async (req, res) => {
   let browser;
   try {
     browser = await puppeteer.launch({
-      headless: 'new', // Use new headless mode for Chrome
-      args: ['--no-sandbox', '--disable-setuid-sandbox'], // Required on some cloud platforms
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      ...(executablePath ? { executablePath } : {}),
     });
 
     const page = await browser.newPage();
 
-    // Go to the Garena shop login page
+    // Go to Garena shop login page
     await page.goto('https://shop.garena.sg/', { waitUntil: 'networkidle2' });
 
-    // Replace '#uid-input' with the actual UID input field selector on the page
-    await page.type('#uid-input', uid);
-
-    // Replace '#login-button' with the actual login/submit button selector
+    // TODO: Replace selectors with actual ones from the site
+    await page.type('#uid-input', uid); // Replace '#uid-input' with actual selector
     await Promise.all([
-      page.click('#login-button'),
+      page.click('#login-button'), // Replace '#login-button' with actual selector
       page.waitForNavigation({ waitUntil: 'networkidle2' }),
     ]);
 
-    // Replace '.username' with the actual CSS selector for the username element after login
-    const playerName = await page.$eval('.username', el => el.textContent.trim());
+    const playerName = await page.$eval('.username', el => el.textContent.trim()); // Replace '.username' with actual selector
 
     await browser.close();
     res.json({ playerName });
