@@ -13,6 +13,7 @@ app.post('/get-player-name', async (req, res) => {
   let browser;
   try {
     browser = await puppeteer.launch({
+      headless: 'new',  // use new headless mode
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     const page = await browser.newPage();
@@ -20,17 +21,14 @@ app.post('/get-player-name', async (req, res) => {
     // Go to Garena shop login page
     await page.goto('https://shop.garena.sg/', { waitUntil: 'networkidle2' });
 
-    // Type UID in login input (REPLACE '#uid-input' with actual selector)
-    await page.type('#uid-input', uid);
-
-    // Click login button and wait for navigation (REPLACE '#login-button')
+    // Replace these selectors with the real ones from the website:
+    await page.type('#uid-input', uid);        // UID input field selector
     await Promise.all([
-      page.click('#login-button'),
+      page.click('#login-button'),              // Login button selector
       page.waitForNavigation({ waitUntil: 'networkidle2' }),
     ]);
 
-    // Extract username from page (REPLACE '.username' with actual selector)
-    const playerName = await page.$eval('.username', el => el.textContent.trim());
+    const playerName = await page.$eval('.username', el => el.textContent.trim()); // Username selector
 
     await browser.close();
     res.json({ playerName });
